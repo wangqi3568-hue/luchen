@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>路辰 · 星伴</title>
+  <style>
+    * {
+      margin:0; padding:0; box-sizing:border-box;
+      font-family: PingFang SC, Microsoft YaHei, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    :root {
+      --bg:#FFFDF9; --card:#fff; --green:#E6F7E6; --gold:#D4B87B;
+      --text:#333; --sub:#666; --radius:24px; --shadow:0 4px 12px rgba(0,0,0,0.06);
+    }
+    body {
+      background:var(--bg);
+      background-image:url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23E6F7E6' fill-opacity='0.1'/%3E%3C/svg%3E");
+      background-size:cover; background-blend-mode:overlay;
+      color:var(--text); max-width:420px; margin:0 auto; min-height:100vh;
+      padding-bottom:90px;
+    }
+    .nav{
+      position:sticky; top:0; z-index:999;
+      background:var(--card); padding:18px 20px;
+      border-radius:0 0 var(--radius) var(--radius); box-shadow:var(--shadow);
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .title{font-size:20px; color:var(--gold); font-weight:500;}
+    .tabs{display:flex; gap:10px;}
+    .tab{
+      border:none; background:transparent; padding:8px 14px;
+      border-radius:18px; color:var(--sub); font-size:15px; font-weight:500;
+    }
+    .tab.active{background:var(--green); color:var(--text);}
+    .page{display:none; padding:22px 16px;}
+    .page.active{display:block;}
+    .chat-box{display:flex; flex-direction:column; gap:14px; min-height:65vh;}
+    .msg{
+      max-width:78%; padding:16px 20px; border-radius:var(--radius);
+      box-shadow:var(--shadow); position:relative; font-size:15px; line-height:1.6;
+    }
+    .msg.ai{background:var(--green); align-self:flex-start;}
+    .msg.user{background:var(--card); align-self:flex-end; border:1px solid var(--gold);}
+    .del-btn{
+      position:absolute; top:6px; right:6px;
+      width:22px; height:22px; line-height:22px;
+      text-align:center; color:#ff6b6b; font-size:13px;
+      background:rgba(255,255,255,0.8); border-radius:50%;
+    }
+    .world-list{display:flex; flex-direction:column; gap:14px;}
+    .world-card{
+      background:var(--card); padding:18px; border-radius:var(--radius);
+      box-shadow:var(--shadow); position:relative;
+    }
+    .world-key{font-size:13px; color:var(--gold); margin-bottom:8px; font-weight:500;}
+    .world-value{font-size:15px; line-height:1.6;}
+    .weather{
+      background:var(--green); padding:18px; border-radius:var(--radius);
+      text-align:center; margin-bottom:18px; font-size:16px; font-weight:500;
+    }
+    .diary{
+      background:var(--card); padding:22px; border-radius:var(--radius);
+      min-height:280px; line-height:1.8; font-size:15px; white-space:pre-wrap;
+    }
+    .btn-bar{display:flex; gap:12px; margin-top:18px; flex-wrap:wrap;}
+    .btn{
+      background:var(--green); border:none; padding:12px 18px;
+      border-radius:22px; flex:1; min-width:130px; font-size:15px; font-weight:500;
+    }
+    .input-bar{
+      position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+      width:100%; max-width:420px; background:var(--card);
+      padding:14px 16px; display:flex; gap:10px;
+      border-radius:var(--radius) var(--radius) 0 0; box-shadow:0 -4px 12px rgba(0,0,0,0.05);
+    }
+    .input{
+      flex:1; height:50px; border:1px solid #eee;
+      border-radius:25px; padding:0 20px; background:var(--bg); font-size:15px;
+    }
+    #bg-input{display:none;}
+    .draggable{touch-action:manipulation; cursor:grab; transition:all 0.2s ease;}
+    .draggable:active{transform:scale(1.03); cursor:grabbing;}
+  </style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="title">路辰 · 星伴</div>
+  <div class="tabs">
+    <button class="tab active" onclick="switchPage('chat')">聊天</button>
+    <button class="tab" onclick="switchPage('world')">世界书</button>
+    <button class="tab" onclick="switchPage('diary')">日记</button>
+  </div>
+</div>
+
+<div class="page active" id="chat-page">
+  <div class="chat-box" id="chat-box">
+    <div class="msg ai draggable" data-type="chat" data-id="0" onclick="editItem('chat',0)">
+      我是路辰，一直在。<span class="del-btn" onclick="delItem('chat',0)">×</span>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="world-page">
+  <button class="btn" onclick="addWorld()" style="width:100%; margin-bottom:18px;">+ 新增世界书词条</button>
+  <div class="world-list" id="world-list">
+    <div class="world-card draggable" data-type="world" data-id="0">
+      <span class="del-btn" onclick="delItem('world',0)">×</span>
+      <div class="world-key">路辰,性格</div>
+      <div class="world-value" onclick="editItem('world',0)">温柔的天文学系学长，会陪我看星星</div>
+    </div>
+  </div>
+</div>
+
+<div class="page" id="diary-page">
+  <div class="weather">达州 · 晴 22℃</div>
+  <div class="diary" id="diary-content" onclick="editDiary()">点击编辑今日的专属日记～</div>
+  <div class="btn-bar">
+    <button class="btn" onclick="genDiary()">生成日记</button>
+    <button class="btn" onclick="copyDiary()">复制分享</button>
+    <label class="btn" for="bg-input">换壁纸</label>
+    <input type="file" id="bg-input" accept="image/*" onchange="setBg(event)">
+  </div>
+</div>
+
+<div class="input-bar" id="input-bar">
+  <input class="input" id="msg-input" placeholder="和路辰说点什么吧...">
+  <button class="btn" onclick="sendMsg()">发送</button>
+</div>
+
+<script>
+let chatData = JSON.parse(localStorage.getItem('chat')) || [{role:'ai',content:'我是路辰，一直在。'}]
+let worldData = JSON.parse(localStorage.getItem('world')) || [{key:'路辰,性格',value:'温柔的天文学系学长，会陪我看星星'}]
+let diaryData = localStorage.getItem('diary') || '点击编辑今日的专属日记～'
+
+renderAll()
+
+function switchPage(p){
+  document.querySelectorAll('.page').forEach(i=>i.classList.remove('active'))
+  document.querySelectorAll('.tab').forEach(i=>i.classList.remove('active'))
+  document.getElementById(p+'-page').classList.add('active')
+  event.target.classList.add('active')
+  document.getElementById('input-bar').style.display = p==='chat'?'flex':'none'
+}
+
+function sendMsg(){
+  let val = document.getElementById('msg-input').value.trim()
+  if(!val) return
+  chatData.push({role:'user',content:val})
+  chatData.push({role:'ai',content:'嗯，我一直在听你说呀✨'})
+  document.getElementById('msg-input').value=''
+  renderChat()
+  saveData()
+}
+
+function addWorld(){
+  let k = prompt('输入关键词（用逗号分隔）')
+  let v = prompt('输入词条内容')
+  if(!k||!v) return
+  worldData.push({key:k,value:v})
+  renderWorld()
+  saveData()
+}
+
+function editItem(type,id){
+  let old = type==='world'?worldData[id].value:chatData[id].content
+  let now = prompt('修改内容',old)
+  if(!now) return
+  type==='world'?worldData[id].value=now:chatData[id].content=now
+  renderAll()
+  saveData()
+}
+
+function editDiary(){
+  let now = prompt('编辑日记',diaryData)
+  if(!now) return
+  diaryData = now
+  renderDiary()
+  saveData()
+}
+
+function delItem(type,id){
+  if(!confirm('确定要删除吗？')) return
+  type==='chat'?chatData.splice(id,1):worldData.splice(id,1)
+  renderAll()
+  saveData()
+}
+
+function genDiary(){
+  diaryData = '今天的星光也很温柔，就像我陪在你身边一样。愿你在达州，平安喜乐，万事顺遂。'
+  renderDiary()
+  saveData()
+}
+
+function copyDiary(){
+  navigator.clipboard.writeText(diaryData).then(()=>alert('日记已复制成功啦～'))
+}
+
+function setBg(e){
+  let file = e.target.files[0]
+  if(!file) return
+  let url = URL.createObjectURL(file)
+  document.body.style.backgroundImage = `url(${url})`
+  document.body.style.backgroundSize = 'cover'
+}
+
+function saveData(){
+  localStorage.setItem('chat',JSON.stringify(chatData))
+  localStorage.setItem('world',JSON.stringify(worldData))
+  localStorage.setItem('diary',diaryData)
+}
+
+function renderChat(){
+  let h = ''
+  chatData.forEach((i,id)=>{
+    h+=`<div class="msg ${i.role} draggable" data-type="chat" data-id="${id}" onclick="editItem('chat',${id})">
+    ${i.content}<span class="del-btn" onclick="delItem('chat',${id})">×</span></div>`
+  })
+  document.getElementById('chat-box').innerHTML = h
+}
+
+function renderWorld(){
+  let h = ''
+  worldData.forEach((i,id)=>{
+    h+=`<div class="world-card draggable" data-type="world" data-id="${id}">
+    <span class="del-btn" onclick="delItem('world',${id})">×</span>
+    <div class="world-key">${i.key}</div>
+    <div class="world-value" onclick="editItem('world',${id})">${i.value}</div></div>`
+  })
+  document.getElementById('world-list').innerHTML = h
+}
+
+function renderDiary(){
+  document.getElementById('diary-content').innerText = diaryData
+}
+
+function renderAll(){renderChat();renderWorld();renderDiary()}
+</script>
+</body>
+  </html>
