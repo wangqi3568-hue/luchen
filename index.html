@@ -24,6 +24,16 @@
   --shadow: 0 4px 12px rgba(0,0,0,0.06);
   --drawer-width: 300px;
 }
+/* 主题色变量 */
+:root {
+  --color-green: #4CAF50;
+  --color-blue: #2196F3;
+  --color-purple: #9C27B0;
+  --color-pink: #E91E63;
+  --color-gray: #9E9E9E;
+  --color-black: #212121;
+  --current-color: var(--color-green);
+}
 body {
   background: var(--bg);
   color: var(--text);
@@ -32,7 +42,7 @@ body {
   min-height: 100vh;
   padding-bottom: 100px;
   font-size: 16px;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
 }
 /* 遮罩层 */
 .overlay {
@@ -79,7 +89,7 @@ body {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: var(--green);
+  background: var(--current-color);
   overflow: hidden;
 }
 .drawer-avatar img {
@@ -94,7 +104,7 @@ body {
 }
 .drawer-status {
   font-size: 12px;
-  color: #4CAF50;
+  color: var(--current-color);
   margin-top: 2px;
 }
 /* 菜单项 */
@@ -113,7 +123,8 @@ body {
   transition: all 0.2s ease;
 }
 .menu-item:hover {
-  background: var(--green);
+  background: var(--current-color);
+  color: #fff;
 }
 .menu-item:active {
   transform: scale(0.98);
@@ -122,7 +133,7 @@ body {
   width: 36px;
   height: 36px;
   border-radius: 12px;
-  background: var(--green);
+  background: var(--current-color);
   overflow: hidden;
 }
 .menu-icon img {
@@ -170,12 +181,12 @@ body {
 .color-dot.active {
   border: 2px solid var(--text);
 }
-.color-green { background: #4CAF50; }
-.color-blue { background: #2196F3; }
-.color-purple { background: #9C27B0; }
-.color-pink { background: #E91E63; }
-.color-gray { background: #9E9E9E; }
-.color-black { background: #212121; }
+.color-green { background: var(--color-green); }
+.color-blue { background: var(--color-blue); }
+.color-purple { background: var(--color-purple); }
+.color-pink { background: var(--color-pink); }
+.color-gray { background: var(--color-gray); }
+.color-black { background: var(--color-black); }
 /* 日夜模式 */
 .mode-toggle {
   display: flex;
@@ -183,7 +194,7 @@ body {
   justify-content: space-between;
   padding: 12px 16px;
   border-radius: 16px;
-  background: var(--green);
+  background: var(--current-color);
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -193,9 +204,11 @@ body {
 .mode-text {
   font-size: 14px;
   font-weight: 500;
+  color: #fff;
 }
 .mode-icon {
   font-size: 18px;
+  color: #fff;
 }
 /* 顶部导航栏 */
 .nav {
@@ -219,10 +232,10 @@ body {
   width: 36px;
   height: 36px;
   border-radius: 12px;
-  background: var(--green);
+  background: var(--current-color);
   border: none;
   font-size: 20px;
-  color: var(--text);
+  color: #fff;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -249,13 +262,27 @@ body {
   line-height: 1.6;
 }
 .msg.ai {
-  background: var(--green);
+  background: var(--current-color);
+  color: #fff;
   align-self: flex-start;
 }
 .msg.user {
   background: var(--card);
   align-self: flex-end;
-  border: 1px solid var(--gold);
+  border: 1px solid var(--current-color);
+}
+.del-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
+  text-align: center;
+  color: #ff6b6b;
+  font-size: 13px;
+  background: rgba(255,255,255,.9);
+  border-radius: 50%;
 }
 /* 底部输入栏 */
 .input-bar {
@@ -270,7 +297,7 @@ body {
   display: flex;
   gap: 10px;
   border-radius: var(--radius) var(--radius) 0 0;
-  box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+  box-shadow: 0 -4px 12px rgba(0,0,0,.05);
 }
 .input {
   flex: 1;
@@ -283,15 +310,16 @@ body {
 }
 .input:focus {
   outline: none;
-  border-color: var(--green);
+  border-color: var(--current-color);
 }
 .btn {
-  background: var(--green);
+  background: var(--current-color);
   border: none;
   padding: 12px 18px;
   border-radius: 22px;
   font-size: 15px;
   font-weight: 500;
+  color: #fff;
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -302,7 +330,6 @@ body {
 body.dark {
   --bg: #121212;
   --card: #1E1E1E;
-  --green: #2E7D32;
   --gold: #FFD54F;
   --text: #E0E0E0;
   --sub: #9E9E9E;
@@ -399,7 +426,9 @@ body.dark {
 <!-- 页面内容 -->
 <div class="page" id="chat-page">
   <div class="chat-box">
-    <div class="msg ai">我是路辰，一直在。</div>
+    <div class="msg ai">
+      我是路辰，一直在。<span class="del-btn" onclick="delItem('chat',0)">×</span>
+    </div>
   </div>
 </div>
 <!-- 底部输入栏 -->
@@ -408,7 +437,7 @@ body.dark {
   <button class="btn">发送</button>
 </div>
 <script>
-// 侧边栏控制
+// 阻止事件冒泡，确保抽屉能正常关闭
 function openDrawer() {
   document.getElementById('drawer').classList.add('active');
   document.getElementById('overlay').classList.add('active');
@@ -417,12 +446,21 @@ function closeDrawer() {
   document.getElementById('drawer').classList.remove('active');
   document.getElementById('overlay').classList.remove('active');
 }
-// 主题切换
+// 修复主题切换逻辑
 function changeTheme(color) {
   const dots = document.querySelectorAll('.color-dot');
   dots.forEach(dot => dot.classList.remove('active'));
   event.target.classList.add('active');
-  // 这里可以扩展为不同主题色的变量切换
+  
+  const colorMap = {
+    green: '--color-green',
+    blue: '--color-blue',
+    purple: '--color-purple',
+    pink: '--color-pink',
+    gray: '--color-gray',
+    black: '--color-black'
+  };
+  document.documentElement.style.setProperty('--current-color', `var(${colorMap[color]})`);
 }
 // 日夜模式
 function toggleDarkMode() {
@@ -430,10 +468,16 @@ function toggleDarkMode() {
   const modeIcon = document.querySelector('.mode-icon');
   modeIcon.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
 }
-// 页面切换
+// 页面切换（带关闭抽屉逻辑）
 function switchPage(pageName) {
   closeDrawer();
   // 这里可以扩展为不同页面的显示/隐藏逻辑
+}
+// 删除消息（示例）
+function delItem(type, id) {
+  if(confirm("确定要删除吗？")) {
+    // 这里可以扩展为删除逻辑
+  }
 }
 </script>
 </body>
