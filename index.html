@@ -5,21 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>路辰 · Luchen</title>
   <style>
-    /* ===== 基础样式与变量 ===== */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+    /* ===== 核心布局：确保输入框永远在底部 ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     :root {
-      --primary: #2d5a3d; /* 路辰标志性的深绿色 */
-      --primary-light: #3d7a5d;
+      --primary: #2d5a3d; /* 路辰森林绿 */
       --bg: #f5f5f5;
       --card-bg: #ffffff;
       --text: #1a1a1a;
-      --text-secondary: #666;
+      --text-sub: #666;
       --border: #e0e0e0;
       --user-bubble: #2d5a3d;
       --ai-bubble: #e8f5e9;
@@ -30,546 +24,340 @@
       --bg: #1a1a1a;
       --card-bg: #2a2a2a;
       --text: #e0e0e0;
-      --text-secondary: #999;
-      --border: #3a3a3a;
+      --text-sub: #999;
+      --border: #333;
       --user-bubble: #3d7a5d;
-      --ai-bubble: #2d4a3d;
+      --ai-bubble: #243a2d;
     }
 
-    /* 修复：使用 Flex 布局确保输入框在屏幕内 */
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: -apple-system, sans-serif;
       background: var(--bg);
       color: var(--text);
       height: 100vh;
       display: flex;
-      flex-direction: column;
+      flex-direction: column; /* 纵向排列 */
       overflow: hidden;
-      transition: background 0.3s;
+      transition: 0.3s;
     }
 
-    /* ===== 顶部栏 ===== */
+    /* 顶部栏 */
     .header {
       background: var(--card-bg);
-      border-bottom: 1px solid var(--border);
       padding: 12px 16px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
 
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    .header-info { display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
 
-    .avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: var(--primary);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-size: 18px;
-      font-weight: bold;
-      overflow: hidden;
-    }
-
-    .header-name {
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    .header-status {
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-
-    .icon-btn {
-      width: 36px;
-      height: 36px;
-      border: none;
-      background: transparent;
-      color: var(--text);
-      border-radius: 50%;
-      cursor: pointer;
-      font-size: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    /* ===== 场景切换栏 ===== */
+    /* 场景切换 */
     .scenes {
       background: var(--card-bg);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 16px;
+      padding: 10px;
       overflow-x: auto;
       white-space: nowrap;
+      border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
-
     .scenes::-webkit-scrollbar { display: none; }
-
     .scene-btn {
-      display: inline-flex;
-      align-items: center;
-      padding: 8px 16px;
+      padding: 6px 15px;
       margin-right: 8px;
+      border-radius: 20px;
       border: 1px solid var(--border);
       background: var(--bg);
-      border-radius: 20px;
-      font-size: 14px;
       color: var(--text);
+      font-size: 13px;
       cursor: pointer;
-      transition: all 0.2s;
     }
+    .scene-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-    .scene-btn.active {
-      background: var(--primary);
-      color: white;
-      border-color: var(--primary);
-    }
-
-    /* ===== 聊天区域 ===== */
-    .container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .messages {
+    /* 聊天区 */
+    .chat-container {
       flex: 1;
       overflow-y: auto;
-      padding: 16px;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    .message {
+      padding: 15px;
       display: flex;
-      margin-bottom: 16px;
-      animation: slideIn 0.3s ease-out;
+      flex-direction: column;
+      gap: 15px;
     }
 
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    .msg { display: flex; max-width: 85%; animation: fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .msg.user { align-self: flex-end; }
+    .bubble { padding: 10px 14px; border-radius: 15px; line-height: 1.5; font-size: 15px; word-break: break-all; }
+    .msg.user .bubble { background: var(--user-bubble); color: white; border-bottom-right-radius: 4px; }
+    .msg.ai .bubble { background: var(--ai-bubble); color: var(--text); border-bottom-left-radius: 4px; }
 
-    .message.user { justify-content: flex-end; }
-
-    .message-bubble {
-      max-width: 80%;
-      padding: 12px 16px;
-      border-radius: 18px;
-      word-wrap: break-word;
-      line-height: 1.5;
-    }
-
-    .message.user .message-bubble {
-      background: var(--user-bubble);
-      color: white;
-      border-bottom-right-radius: 4px;
-    }
-
-    .message.ai .message-bubble {
-      background: var(--ai-bubble);
-      color: var(--text);
-      border-bottom-left-radius: 4px;
-    }
-
-    .message-time {
-      font-size: 11px;
-      color: var(--text-secondary);
-      margin-top: 4px;
-      text-align: right;
-    }
-
-    /* ===== 输入区域 ===== */
+    /* 输入区 */
     .input-area {
       background: var(--card-bg);
-      border-top: 1px solid var(--border);
-      padding: 12px 16px;
+      padding: 10px 15px;
       display: flex;
       gap: 10px;
       align-items: flex-end;
-      flex-shrink: 0;
+      border-top: 1px solid var(--border);
+      padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* 适配全面屏 */
     }
 
-    .input-wrapper {
+    .input-box {
       flex: 1;
       background: var(--bg);
       border-radius: 20px;
-      padding: 8px 14px;
+      padding: 8px 15px;
       border: 1px solid var(--border);
     }
 
-    #messageInput {
+    textarea {
       width: 100%;
-      border: none;
       background: transparent;
+      border: none;
       outline: none;
-      font-size: 16px;
-      color: var(--text);
       resize: none;
-      max-height: 120px;
-      padding: 2px 0;
+      color: var(--text);
+      font-size: 16px;
+      max-height: 100px;
     }
 
     #sendBtn {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: var(--primary);
-      color: white;
-      border: none;
-      font-size: 18px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--primary); color: white; border: none;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
     }
 
-    /* ===== 抽屉/菜单 ===== */
-    .drawer {
-      position: fixed;
-      top: 0;
-      left: -100%;
-      width: 80%;
-      max-width: 300px;
-      height: 100vh;
-      background: var(--card-bg);
-      transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: 200;
-      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-    }
-    .drawer.open { left: 0; }
+    /* 抽屉 */
+    .drawer { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: var(--card-bg); transition: 0.3s; z-index: 100; padding: 20px; }
+    .drawer.open { left: 0; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; z-index: 99; }
+    .overlay.show { display: block; }
 
-    .drawer-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.4);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s;
-      z-index: 199;
-    }
-    .drawer-overlay.show { opacity: 1; pointer-events: all; }
-
-    .drawer-header { padding: 30px 20px; border-bottom: 1px solid var(--border); }
-    .drawer-item { padding: 16px 20px; cursor: pointer; color: var(--text); }
-    .drawer-item:active { background: var(--bg); }
-
-    /* ===== 提示框与动画 ===== */
-    .toast {
-      position: fixed;
-      bottom: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.7);
-      color: white;
-      padding: 10px 20px;
-      border-radius: 20px;
-      font-size: 14px;
-      opacity: 0;
-      transition: opacity 0.3s;
-      z-index: 1000;
-    }
+    /* 吐司提示 */
+    .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; opacity: 0; transition: 0.3s; pointer-events: none; }
     .toast.show { opacity: 1; }
-
-    .typing-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--text-secondary);
-      display: inline-block;
-      animation: typing 1.4s infinite;
-      margin: 0 2px;
-    }
-    @keyframes typing {
-      0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
-      30% { opacity: 1; transform: translateY(-4px); }
-    }
   </style>
 </head>
 <body>
 
   <div class="header">
-    <div class="header-left">
-      <button class="icon-btn" id="menuBtn">☰</button>
+    <div class="header-info">
+      <div id="menuBtn">☰</div>
       <div class="avatar">路</div>
       <div>
-        <div class="header-name">路辰</div>
-        <div class="header-status">在线</div>
+        <div style="font-weight: bold;">路辰</div>
+        <div style="font-size: 11px; color: #4caf50;">● 在线</div>
       </div>
     </div>
-    <button class="icon-btn" id="themeBtn">🌙</button>
+    <div id="themeBtn" style="cursor: pointer; font-size: 20px;">🌙</div>
   </div>
 
-  <div class="scenes" id="scenes">
+  <div class="scenes" id="scenesList">
     <button class="scene-btn active" data-scene="default">日常对话</button>
     <button class="scene-btn" data-scene="photo">更换照片</button>
     <button class="scene-btn" data-scene="room">装修房间</button>
-    <button class="scene-btn" data-scene="emoji">表情贴图</button>
     <button class="scene-btn" data-scene="memory">他的记忆</button>
   </div>
 
-  <div class="container">
-    <div class="messages" id="messages">
-      </div>
+  <div class="chat-container" id="chatBox"></div>
 
-    <div class="input-area">
-      <div class="input-wrapper">
-        <textarea id="messageInput" placeholder="想对路辰说什么..." rows="1"></textarea>
-      </div>
-      <button id="sendBtn">➤</button>
+  <div class="input-area">
+    <div class="input-box">
+      <textarea id="userInput" placeholder="和路辰说话..." rows="1"></textarea>
     </div>
+    <button id="sendBtn">➤</button>
   </div>
 
-  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <div class="overlay" id="overlay"></div>
   <div class="drawer" id="drawer">
-    <div class="drawer-header">
-      <h3>路辰 · Luchen</h3>
-      <p style="font-size: 12px; color: #888; margin-top: 5px;">《时空中的绘旅人》</p>
-    </div>
-    <div class="drawer-menu">
-      <div class="drawer-item" id="exportBtn"> 导出聊天记录记录</div>
-      <div class="drawer-item" id="clearBtn"> 清空历史</div>
-    </div>
+    <h3 style="margin-bottom: 20px;">路辰 · 设置</h3>
+    <div style="padding: 15px 0; border-bottom: 1px solid var(--border); cursor: pointer;" onclick="clearHistory()">🗑️ 清空历史</div>
+    <div style="padding: 15px 0; border-bottom: 1px solid var(--border); cursor: pointer;" onclick="exportChat()">📥 导出记录</div>
   </div>
 
   <div class="toast" id="toast"></div>
 
   <script>
-   // ===== 配置区域 =====
-   const CONFIG = {
-      apiKey: 'AIzaSyCtbmDdadb1B0ReWK-17IEtAk3HVIe9GHY', // 记得填入你的 Key
+    // ===== 配置中心 =====
+    const CONFIG = {
+      // 【这里填入你的 API KEY，记得带引号】
+      apiKey: 'AIzaSyCtbmDdadb1B0ReWK-17IEtAk3HVIe9GHY', 
       
-      // 使用 v1beta 频道，这个频道对 1.5-flash 的支持最完美
-      apiEndpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
+      // 使用目前最稳妥的路径
+      endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
       
-      systemPrompt: `你是路辰,《时空中的绘旅人》中的角色。性格温柔体贴、斯文有礼，说话温和但有温度，喜欢用"嗯"、"那么"等语气词。`,
+      systemPrompt: "你是路辰,《时空中的绘旅人》中的角色。性格温柔体贴、斯文有礼。说话温和且充满温度，常使用'嗯'、'那么'。你非常在乎对方的情绪。",
+      
       scenes: {
-        default: '日常对话',
-        photo: '一起看照片',
-        room: '讨论房间布置',
-        emoji: '轻松互动',
-        memory: '分享回忆'
+        default: "日常对话",
+        photo: "查看彼此的照片",
+        room: "整理和布置房间",
+        memory: "分享深处的记忆"
       }
     };
 
-    let messages = [];
+    let chatHistory = [];
     let currentScene = 'default';
 
-    const elements = {
-      menuBtn: document.getElementById('menuBtn'),
-      themeBtn: document.getElementById('themeBtn'),
-      scenes: document.getElementById('scenes'),
-      messagesDiv: document.getElementById('messages'),
-      messageInput: document.getElementById('messageInput'),
-      sendBtn: document.getElementById('sendBtn'),
-      drawer: document.getElementById('drawer'),
-      drawerOverlay: document.getElementById('drawerOverlay'),
-      toast: document.getElementById('toast'),
-      clearBtn: document.getElementById('clearBtn'),
-      exportBtn: document.getElementById('exportBtn')
-    };
+    // DOM 元素
+    const chatBox = document.getElementById('chatBox');
+    const userInput = document.getElementById('userInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const toast = document.getElementById('toast');
 
-    // ===== 初始化 =====
+    // 初始化
     function init() {
-      loadTheme();
-      loadMessages();
-      if(messages.length === 0) {
-        addAIMessage("你好，我是路辰。很高兴能在这里见到你。");
+      // 加载主题
+      if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
+      
+      // 加载历史记录
+      const saved = localStorage.getItem('luchen_history');
+      if(saved) {
+        chatHistory = JSON.parse(saved);
+        chatHistory.forEach(renderMsg);
+      } else {
+        addMsg('ai', '你好，我是路辰。很高兴能再次见到你。');
       }
-      setupListeners();
+      
+      setupEvents();
     }
 
-    function setupListeners() {
-      // 菜单与主题
-      elements.menuBtn.onclick = toggleDrawer;
-      elements.drawerOverlay.onclick = toggleDrawer;
-      elements.themeBtn.onclick = toggleTheme;
-
-      // 发送逻辑
-      elements.sendBtn.onclick = sendMessage;
-      elements.messageInput.onkeydown = (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          sendMessage();
-        }
+    function setupEvents() {
+      // 发送点击
+      sendBtn.onclick = handleSend;
+      
+      // 回车发送
+      userInput.onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } };
+      
+      // 输入框高度自适应
+      userInput.oninput = function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
       };
 
-      // 修复：输入框自动高度逻辑
-      elements.messageInput.oninput = function() {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
+      // 菜单切换
+      document.getElementById('menuBtn').onclick = () => {
+        document.getElementById('drawer').classList.add('open');
+        document.getElementById('overlay').classList.add('show');
+      };
+      document.getElementById('overlay').onclick = () => {
+        document.getElementById('drawer').classList.remove('open');
+        document.getElementById('overlay').classList.remove('show');
+      };
+
+      // 主题切换
+      document.getElementById('themeBtn').onclick = () => {
+        document.body.classList.toggle('dark');
+        const isDark = document.body.classList.contains('dark');
+        document.getElementById('themeBtn').innerText = isDark ? '☀️' : '🌙';
+        localStorage.setItem('theme', isDark ? 'dark' : 'light');
       };
 
       // 场景切换
-      elements.scenes.onclick = (e) => {
-        if (e.target.classList.contains('scene-btn')) {
-          const btns = document.querySelectorAll('.scene-btn');
-          btns.forEach(b => b.classList.remove('active'));
+      document.getElementById('scenesList').onclick = (e) => {
+        if(e.target.classList.contains('scene-btn')) {
+          document.querySelectorAll('.scene-btn').forEach(b => b.classList.remove('active'));
           e.target.classList.add('active');
           currentScene = e.target.dataset.scene;
-          showToast(`已切换至：${CONFIG.scenes[currentScene]}`);
+          showToast('切换至场景：' + CONFIG.scenes[currentScene]);
         }
       };
-
-      elements.clearBtn.onclick = clearHistory;
-      elements.exportBtn.onclick = exportChat;
     }
 
-    async function sendMessage() {
-      const text = elements.messageInput.value.trim();
-      if (!text) return;
+    async function handleSend() {
+      const text = userInput.value.trim();
+      if(!text) return;
 
-      addUserMessage(text);
-      elements.messageInput.value = '';
-      elements.messageInput.style.height = 'auto'; // 重置高度
-
-      await getAIResponse(text);
+      userInput.value = '';
+      userInput.style.height = 'auto';
+      
+      addMsg('user', text);
+      await getAIResponse();
     }
 
-    function addUserMessage(text) {
-      const msg = { role: 'user', content: text, time: new Date() };
-      messages.push(msg);
-      renderMessage(msg);
-      saveMessages();
+    function addMsg(role, content) {
+      const msg = { role, content, time: Date.now() };
+      chatHistory.push(msg);
+      renderMsg(msg);
+      localStorage.setItem('luchen_history', JSON.stringify(chatHistory));
     }
 
-    function addAIMessage(text) {
-      const msg = { role: 'ai', content: text, time: new Date() };
-      messages.push(msg);
-      renderMessage(msg);
-      saveMessages();
-    }
-
-    function renderMessage(msg) {
+    function renderMsg(msg) {
       const div = document.createElement('div');
-      div.className = `message ${msg.role}`;
-      const timeStr = new Date(msg.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-      div.innerHTML = `
-        <div class="message-content">
-          <div class="message-bubble">${msg.content}</div>
-          <div class="message-time">${timeStr}</div>
-        </div>
-      `;
-      elements.messagesDiv.appendChild(div);
-      elements.messagesDiv.scrollTop = elements.messagesDiv.scrollHeight;
+      div.className = `msg ${msg.role}`;
+      div.innerHTML = `<div class="bubble">${msg.content}</div>`;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-   async function getAIResponse(userText) {
-  if (!CONFIG.apiKey) {
-    showToast("请先配置 API Key");
-    return;
-  }
+    async function getAIResponse() {
+      if(!CONFIG.apiKey || CONFIG.apiKey.includes('你的')) {
+        showToast('请先在代码中填入 API KEY');
+        return;
+      }
 
-  showTyping();
-  try {
-    const recentMessages = messages.slice(-10).map(m => ({
-        role: m.role === 'user' ? 'user' : 'model',
-        parts: [{ text: m.content }]
-    }));
+      // 显示打字中状态
+      const typing = document.createElement('div');
+      typing.className = 'msg ai';
+      typing.innerHTML = `<div class="bubble" id="typing">...</div>`;
+      chatBox.appendChild(typing);
+      chatBox.scrollTop = chatBox.scrollHeight;
 
-    const response = await fetch(`${CONFIG.apiEndpoint}?key=${CONFIG.apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: recentMessages,
-        // v1beta 支持标准的 system_instruction 格式
-        system_instruction: {
-          parts: [{ text: CONFIG.systemPrompt + " 当前场景：" + CONFIG.scenes[currentScene] }]
-        },
-        generationConfig: {
-          temperature: 0.8,
-          maxOutputTokens: 1000,
+      try {
+        // 整理历史记录 (取最近10条)
+        const history = chatHistory.slice(-10).map(m => ({
+          role: m.role === 'user' ? 'user' : 'model',
+          parts: [{ text: m.content }]
+        }));
+
+        const response = await fetch(`${CONFIG.endpoint}?key=${CONFIG.apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: history,
+            // 核心修复：带下划线的系统指令
+            system_instruction: {
+              parts: [{ text: CONFIG.systemPrompt + " 当前场景：" + CONFIG.scenes[currentScene] }]
+            },
+            generationConfig: { temperature: 0.8, maxOutputTokens: 800 }
+          })
+        });
+
+        const data = await response.json();
+        document.getElementById('typing').parentElement.remove(); // 移除打字动画
+
+        if(data.candidates && data.candidates[0].content) {
+          addMsg('ai', data.candidates[0].content.parts[0].text);
+        } else {
+          const err = data.error ? data.error.message : '通讯解析失败';
+          addMsg('ai', `(路辰微微皱眉) 似乎信号不太好，错误：${err}`);
         }
-      })
-    });
-
-    const data = await response.json();
-    removeTyping();
-    
-    if (data.candidates && data.candidates[0].content) {
-        const aiText = data.candidates[0].content.parts[0].text;
-        addAIMessage(aiText);
-    } else {
-        const errorMsg = data.error ? data.error.message : "未知通讯错误";
-        addAIMessage(`(路辰微微皱眉) 抱歉，通讯还是有些干扰。错误信息：${errorMsg}`);
-    }
-
-  } catch (e) {
-    removeTyping();
-    addAIMessage(`(信号中断) 无法连接。错误：${e.message}`);
-  }
-}
-
-    const data = await response.json();
-    removeTyping();
-
-    if (data.candidates && data.candidates[0].content) {
-      const aiText = data.candidates[0].content.parts[0].text;
-      addAIMessage(aiText);
-    } else if (data.error) {
-      // 如果还有错，直接把具体错误报出来
-      addAIMessage(`(通讯受阻) 错误原因：${data.error.message}`);
-    } else {
-      addAIMessage("(路辰微微低头，似乎在整理思绪...)");
-    }
-
-  } catch (e) {
-    removeTyping();
-    console.error("请求失败:", e);
-    addAIMessage(`(信号中断) 无法连接到路辰。请检查网络。`);
-  }
-}
-
-    // UI 辅助函数
-    function showTyping() {
-      const div = document.createElement('div');
-      div.id = 'typing';
-      div.className = 'message ai';
-      div.innerHTML = '<div class="message-bubble"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>';
-      elements.messagesDiv.appendChild(div);
-      elements.messagesDiv.scrollTop = elements.messagesDiv.scrollHeight;
-    }
-    function removeTyping() { const t = document.getElementById('typing'); if(t) t.remove(); }
-    function toggleDrawer() { elements.drawer.classList.toggle('open'); elements.drawerOverlay.classList.toggle('show'); }
-    function toggleTheme() { 
-      document.body.classList.toggle('dark');
-      const isDark = document.body.classList.contains('dark');
-      elements.themeBtn.textContent = isDark ? '☀️' : '🌙';
-      localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    }
-    function loadTheme() { if(localStorage.getItem('theme')==='dark') toggleTheme(); }
-    function showToast(msg) {
-      elements.toast.textContent = msg;
-      elements.toast.classList.add('show');
-      setTimeout(() => elements.toast.classList.remove('show'), 2000);
-    }
-    function saveMessages() { localStorage.setItem('luchen_chats', JSON.stringify(messages)); }
-    function loadMessages() {
-      const saved = localStorage.getItem('luchen_chats');
-      if(saved) {
-        messages = JSON.parse(saved);
-        messages.forEach(m => renderMessage(m));
+      } catch (e) {
+        document.getElementById('typing')?.parentElement.remove();
+        showToast('网络请求失败');
+        addMsg('ai', '(路辰没能收到你的消息) 请检查网络。');
       }
     }
-    function clearHistory() { localStorage.removeItem('luchen_chats'); location.reload(); }
+
+    function showToast(msg) {
+      toast.innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+
+    function clearHistory() { if(confirm('要清空和路辰的历史记录吗？')) { localStorage.removeItem('luchen_history'); location.reload(); } }
+    
     function exportChat() {
-        const text = messages.map(m => `[${m.role === 'user' ? '我' : '路辰'}] ${m.content}`).join('\n');
-        const blob = new Blob([text], {type: 'text/plain'});
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = 'chat_with_luchen.txt'; a.click();
+      const text = chatHistory.map(m => `[${m.role === 'user' ? '我' : '路辰'}] ${m.content}`).join('\n');
+      const blob = new Blob([text], {type: 'text/plain'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = '与路辰的对话.txt';
+      a.click();
     }
 
     init();
