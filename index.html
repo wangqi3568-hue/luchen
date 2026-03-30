@@ -347,13 +347,12 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    // ===== 配置区域 =====
-    const CONFIG = {
-      // 1. 确保你的 API Key 填在这里，且带有引号
-      apiKey: 'AIzaSyCtbmDdadb1B0ReWK-17IEtAk3HVIe9GHY', 
+   // ===== 配置区域 =====
+   const CONFIG = {
+      apiKey: 'AIzaSyCtbmDdadb1B0ReWK-17IEtAk3HVIe9GHY', // 记得填入你的 Key
       
-      // 2. 【核心修复点】换成 v1 版的 gemini-pro，这是最稳定的频道
-      apiEndpoint: 'https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent',
+      // 使用 v1beta 频道，这个频道对 1.5-flash 的支持最完美
+      apiEndpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
       
       systemPrompt: `你是路辰,《时空中的绘旅人》中的角色。性格温柔体贴、斯文有礼，说话温和但有温度，喜欢用"嗯"、"那么"等语气词。`,
       scenes: {
@@ -475,33 +474,43 @@
 
   showTyping();
   try {
-    // 1. 准备人设指令
-    const persona = `[指令：请始终以《时空中的绘旅人》中路辰的身份与我对话。性格：温柔、斯文、体贴。当前场景：${CONFIG.scenes[currentScene]}]`;
-
-    // 2. 转换对话历史格式
-    let apiHistory = messages.slice(-10).map(m => ({
-      role: m.role === 'user' ? 'user' : 'model',
-      parts: [{ text: m.content }]
+    const recentMessages = messages.slice(-10).map(m => ({
+        role: m.role === 'user' ? 'user' : 'model',
+        parts: [{ text: m.content }]
     }));
 
-    // 3. 【核心修复】将人设直接注入到对话历史的第一条消息中
-    // 这样不需要任何特殊字段，AI 也能理解自己的身份
-    if (apiHistory.length > 0) {
-      apiHistory[0].parts[0].text = persona + "\n\n" + apiHistory[0].parts[0].text;
-    }
-
-    // 4. 发起请求（只发送 contents，不使用任何不稳定的特殊字段）
     const response = await fetch(`${CONFIG.apiEndpoint}?key=${CONFIG.apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        contents: apiHistory,
+        contents: recentMessages,
+        // v1beta 支持标准的 system_instruction 格式
+        system_instruction: {
+          parts: [{ text: CONFIG.systemPrompt + " 当前场景：" + CONFIG.scenes[currentScene] }]
+        },
         generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 800,
+          temperature: 0.8,
+          maxOutputTokens: 1000,
         }
       })
     });
+
+    const data = await response.json();
+    removeTyping();
+    
+    if (data.candidates && data.candidates[0].content) {
+        const aiText = data.candidates[0].content.parts[0].text;
+        addAIMessage(aiText);
+    } else {
+        const errorMsg = data.error ? data.error.message : "未知通讯错误";
+        addAIMessage(`(路辰微微皱眉) 抱歉，通讯还是有些干扰。错误信息：${errorMsg}`);
+    }
+
+  } catch (e) {
+    removeTyping();
+    addAIMessage(`(信号中断) 无法连接。错误：${e.message}`);
+  }
+}
 
     const data = await response.json();
     removeTyping();
