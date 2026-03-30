@@ -473,93 +473,52 @@
 
   showTyping();
   try {
-    // 获取最近的几条历史记录
-    const recentMessages = messages.slice(-6).map(m => ({
-        role: m.role === 'user' ? 'user' : 'model',
-        parts: [{ text: m.content }]
+    // 1. 准备人设指令
+    const persona = `[指令：请始终以《时空中的绘旅人》中路辰的身份与我对话。性格：温柔、斯文、体贴。当前场景：${CONFIG.scenes[currentScene]}]`;
+
+    // 2. 转换对话历史格式
+    let apiHistory = messages.slice(-10).map(m => ({
+      role: m.role === 'user' ? 'user' : 'model',
+      parts: [{ text: m.content }]
     }));
 
-    // 组合人设和当前场景
-    const fullSystemPrompt = `${CONFIG.systemPrompt}\n当前场景：${CONFIG.scenes[currentScene]}`;
+    // 3. 【核心修复】将人设直接注入到对话历史的第一条消息中
+    // 这样不需要任何特殊字段，AI 也能理解自己的身份
+    if (apiHistory.length > 0) {
+      apiHistory[0].parts[0].text = persona + "\n\n" + apiHistory[0].parts[0].text;
+    }
 
-    // 使用最兼容的请求格式
-    const requestBody = {
-      contents: recentMessages,
-      // 修复点：改用 system_instruction (带下划线)
-      system_instruction: {
-        parts: [{ text: fullSystemPrompt }]
-      },
-      generationConfig: {
-        temperature: 0.8,
-        topP: 0.8,
-        topK: 40,
-        maxOutputTokens: 1024,
-      }
-    };
-
-    const apiUrl = `${CONFIG.apiEndpoint}?key=${CONFIG.apiKey}`;
-    
-    const response = await fetch(apiUrl, {
+    // 4. 发起请求（只发送 contents，不使用任何不稳定的特殊字段）
+    const response = await fetch(`${CONFIG.apiEndpoint}?key=${CONFIG.apiKey}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(requestBody)
-    });
-
-    if (!response.ok) {
-        const errorDetail = await response.json();
-        console.error("API 报错详情:", errorDetail);
-        removeTyping();
-        
-        // 如果系统还是报错说不支持 system_instruction，我们就用 Plan B (直接塞进历史)
-        if (errorDetail.error && errorDetail.error.message.includes("system_instruction")) {
-            return getAIResponsePlanB(userText); 
+      body: JSON.stringify({
+        contents: apiHistory,
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 800,
         }
-
-        const errorMsg = errorDetail.error ? errorDetail.error.message : "未知错误";
-        addAIMessage(`(路辰有些困扰) 通讯似乎还是不太稳定... 错误：${errorMsg}`);
-        return;
-    }
+      })
+    });
 
     const data = await response.json();
     removeTyping();
-    
+
     if (data.candidates && data.candidates[0].content) {
-        const aiText = data.candidates[0].content.parts[0].text;
-        addAIMessage(aiText);
+      const aiText = data.candidates[0].content.parts[0].text;
+      addAIMessage(aiText);
+    } else if (data.error) {
+      // 如果还有错，直接把具体错误报出来
+      addAIMessage(`(通讯受阻) 错误原因：${data.error.message}`);
     } else {
-        addAIMessage("(路辰安静地看着你，似乎在等你继续说...)");
+      addAIMessage("(路辰微微低头，似乎在整理思绪...)");
     }
 
   } catch (e) {
     removeTyping();
-    console.error("发生异常:", e);
-    addAIMessage(`(通讯中断了) 请检查网络连接。`);
+    console.error("请求失败:", e);
+    addAIMessage(`(信号中断) 无法连接到路辰。请检查网络。`);
   }
-}
-
-// --- Plan B: 最原始但也最有效的“人设注入”法 ---
-async function getAIResponsePlanB(userText) {
-    const fullSystemPrompt = `[系统设定：${CONFIG.systemPrompt} 当前场景：${CONFIG.scenes[currentScene]}]`;
-    const history = messages.slice(-6).map(m => ({
-        role: m.role === 'user' ? 'user' : 'model',
-        parts: [{ text: m.content }]
-    }));
-    
-    // 把人设强行塞进第一条消息里
-    if(history.length > 0) {
-        history[0].parts[0].text = fullSystemPrompt + "\n\n" + history[0].parts[0].text;
-    }
-
-    const response = await fetch(`${CONFIG.apiEndpoint}?key=${CONFIG.apiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: history })
-    });
-    
-    const data = await response.json();
-    removeTyping();
-    const aiText = data.candidates[0].content.parts[0].text;
-    addAIMessage(aiText);
 }
 
     // UI 辅助函数
