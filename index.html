@@ -1,484 +1,652 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>路辰 · 星伴</title>
-<style>
-/* 全局基础 */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: PingFang SC, Microsoft YaHei, sans-serif;
-  -webkit-tap-highlight-color: transparent;
-}
-:root {
-  --bg: #FFFDF9;
-  --card: #fff;
-  --green: #E6F7E6;
-  --gold: #D4B87B;
-  --text: #333;
-  --sub: #666;
-  --radius: 24px;
-  --shadow: 0 4px 12px rgba(0,0,0,0.06);
-  --drawer-width: 300px;
-}
-/* 主题色变量 */
-:root {
-  --color-green: #4CAF50;
-  --color-blue: #2196F3;
-  --color-purple: #9C27B0;
-  --color-pink: #E91E63;
-  --color-gray: #9E9E9E;
-  --color-black: #212121;
-  --current-color: var(--color-green);
-}
-body {
-  background: var(--bg);
-  color: var(--text);
-  max-width: 420px;
-  margin: 0 auto;
-  min-height: 100vh;
-  padding-bottom: 100px;
-  font-size: 16px;
-  transition: all 0.3s ease;
-}
-/* 遮罩层 */
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.3);
-  z-index: 998;
-  display: none;
-}
-.overlay.active {
-  display: block;
-}
-/* 侧边栏 Drawer */
-.drawer {
-  position: fixed;
-  top: 0;
-  left: -var(--drawer-width);
-  width: var(--drawer-width);
-  height: 100vh;
-  background: var(--card);
-  box-shadow: 4px 0 12px rgba(0,0,0,0.1);
-  z-index: 999;
-  transition: left 0.3s ease;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-}
-.drawer.active {
-  left: 0;
-}
-/* 侧边栏头部 */
-.drawer-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 16px 0;
-  border-bottom: 1px solid #eee;
-  margin-bottom: 20px;
-}
-.drawer-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--current-color);
-  overflow: hidden;
-}
-.drawer-avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.drawer-name {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--gold);
-}
-.drawer-status {
-  font-size: 12px;
-  color: var(--current-color);
-  margin-top: 2px;
-}
-/* 菜单项 */
-.drawer-menu {
-  flex: 1;
-  overflow-y: auto;
-}
-.menu-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  border-radius: 16px;
-  margin-bottom: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.menu-item:hover {
-  background: var(--current-color);
-  color: #fff;
-}
-.menu-item:active {
-  transform: scale(0.98);
-}
-.menu-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: var(--current-color);
-  overflow: hidden;
-}
-.menu-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.menu-text {
-  flex: 1;
-}
-.menu-title {
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--text);
-}
-.menu-desc {
-  font-size: 12px;
-  color: var(--sub);
-  margin-top: 2px;
-}
-.menu-arrow {
-  color: var(--sub);
-  font-size: 14px;
-}
-/* 主题与日夜模式 */
-.drawer-footer {
-  padding-top: 20px;
-  border-top: 1px solid #eee;
-}
-.theme-colors {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-.color-dot {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-.color-dot:hover {
-  transform: scale(1.2);
-}
-.color-dot.active {
-  border: 2px solid var(--text);
-}
-.color-green { background: var(--color-green); }
-.color-blue { background: var(--color-blue); }
-.color-purple { background: var(--color-purple); }
-.color-pink { background: var(--color-pink); }
-.color-gray { background: var(--color-gray); }
-.color-black { background: var(--color-black); }
-/* 日夜模式 */
-.mode-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  border-radius: 16px;
-  background: var(--current-color);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.mode-toggle:hover {
-  transform: scale(1.02);
-}
-.mode-text {
-  font-size: 14px;
-  font-weight: 500;
-  color: #fff;
-}
-.mode-icon {
-  font-size: 18px;
-  color: #fff;
-}
-/* 顶部导航栏 */
-.nav {
-  position: sticky;
-  top: 0;
-  z-index: 997;
-  background: var(--card);
-  padding: 18px 20px;
-  border-radius: 0 0 var(--radius) var(--radius);
-  box-shadow: var(--shadow);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.nav-title {
-  font-size: 20px;
-  color: var(--gold);
-  font-weight: 600;
-}
-.nav-menu-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: var(--current-color);
-  border: none;
-  font-size: 20px;
-  color: #fff;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.nav-menu-btn:hover {
-  transform: scale(1.05);
-}
-/* 页面内容（示例） */
-.page {
-  padding: 22px 16px;
-}
-.chat-box {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-height: 65vh;
-}
-.msg {
-  max-width: 78%;
-  padding: 16px 20px;
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  position: relative;
-  font-size: 15px;
-  line-height: 1.6;
-}
-.msg.ai {
-  background: var(--current-color);
-  color: #fff;
-  align-self: flex-start;
-}
-.msg.user {
-  background: var(--card);
-  align-self: flex-end;
-  border: 1px solid var(--current-color);
-}
-.del-btn {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 22px;
-  height: 22px;
-  line-height: 22px;
-  text-align: center;
-  color: #ff6b6b;
-  font-size: 13px;
-  background: rgba(255,255,255,.9);
-  border-radius: 50%;
-}
-/* 底部输入栏 */
-.input-bar {
-  position: fixed;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 420px;
-  background: var(--card);
-  padding: 14px 16px;
-  display: flex;
-  gap: 10px;
-  border-radius: var(--radius) var(--radius) 0 0;
-  box-shadow: 0 -4px 12px rgba(0,0,0,.05);
-}
-.input {
-  flex: 1;
-  height: 50px;
-  border: 1px solid #eee;
-  border-radius: 25px;
-  padding: 0 20px;
-  background: var(--bg);
-  font-size: 15px;
-}
-.input:focus {
-  outline: none;
-  border-color: var(--current-color);
-}
-.btn {
-  background: var(--current-color);
-  border: none;
-  padding: 12px 18px;
-  border-radius: 22px;
-  font-size: 15px;
-  font-weight: 500;
-  color: #fff;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.btn:active {
-  transform: scale(0.95);
-}
-/* 日夜模式样式 */
-body.dark {
-  --bg: #121212;
-  --card: #1E1E1E;
-  --gold: #FFD54F;
-  --text: #E0E0E0;
-  --sub: #9E9E9E;
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>路辰 · Luchen</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --primary: #2d5a3d;
+      --primary-light: #3d7a5d;
+      --bg: #f5f5f5;
+      --card-bg: #ffffff;
+      --text: #1a1a1a;
+      --text-secondary: #666;
+      --border: #e0e0e0;
+      --user-bubble: #2d5a3d;
+      --ai-bubble: #e8f5e9;
+    }
+
+    body.dark {
+      --primary: #4a9d6f;
+      --bg: #1a1a1a;
+      --card-bg: #2a2a2a;
+      --text: #e0e0e0;
+      --text-secondary: #999;
+      --border: #3a3a3a;
+      --user-bubble: #3d7a5d;
+      --ai-bubble: #2d4a3d;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      transition: background 0.3s;
+    }
+
+    .header {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .header-name {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .header-status {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: transparent;
+      color: var(--text);
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      transition: background 0.2s;
+    }
+
+    .icon-btn:hover {
+      background: var(--border);
+    }
+
+    .container {
+      height: calc(100vh - 64px);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .scenes {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 16px;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    .scenes::-webkit-scrollbar {
+      display: none;
+    }
+
+    .scene-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      margin-right: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .scene-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .message {
+      display: flex;
+      margin-bottom: 16px;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .message-content {
+      max-width: 75%;
+    }
+
+    .message-bubble {
+      padding: 12px 16px;
+      border-radius: 18px;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+
+    .message.user .message-bubble {
+      background: var(--user-bubble);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.ai .message-bubble {
+      background: var(--ai-bubble);
+      color: var(--text);
+      border-bottom-left-radius: 4px;
+    }
+
+    .message-time {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+      padding: 0 4px;
+    }
+
+    .input-area {
+      background: var(--card-bg);
+      border-top: 1px solid var(--border);
+      padding: 12px 16px;
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      background: var(--bg);
+      border-radius: 24px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+    }
+
+    #messageInput {
+      flex: 1;
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 15px;
+      color: var(--text);
+      resize: none;
+      max-height: 100px;
+    }
+
+    #sendBtn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    #sendBtn:disabled {
+      background: var(--border);
+    }
+
+    .drawer {
+      position: fixed;
+      top: 0;
+      left: -100%;
+      width: 80%;
+      max-width: 300px;
+      height: 100vh;
+      background: var(--card-bg);
+      transition: left 0.3s;
+      z-index: 200;
+      overflow-y: auto;
+    }
+
+    .drawer.open {
+      left: 0;
+    }
+
+    .drawer-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 199;
+    }
+
+    .drawer-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .drawer-header {
+      padding: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .drawer-menu {
+      padding: 8px 0;
+    }
+
+    .drawer-item {
+      padding: 14px 20px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .drawer-item:hover {
+      background: var(--bg);
+    }
+
+    .typing-indicator {
+      display: inline-flex;
+      gap: 4px;
+      padding: 12px 16px;
+    }
+
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-secondary);
+      animation: typing 1.4s infinite;
+    }
+
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes typing {
+      0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+      30% { opacity: 1; transform: translateY(-8px); }
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      opacity: 1;
+    }
+  </style>
 </head>
 <body>
-<!-- 遮罩层 -->
-<div class="overlay" id="overlay" onclick="closeDrawer()"></div>
-<!-- 侧边栏 Drawer -->
-<div class="drawer" id="drawer">
-  <div class="drawer-header">
-    <div class="drawer-avatar">
-      <img src="https://picsum.photos/200/200?random=1" alt="路辰">
+  <div class="header">
+    <div class="header-left">
+      <button class="icon-btn" id="menuBtn">☰</button>
+      <div class="avatar">路</div>
+      <div>
+        <div class="header-name">路辰</div>
+        <div class="header-status">在线</div>
+      </div>
     </div>
     <div>
-      <div class="drawer-name">路辰 · Alkaid</div>
-      <div class="drawer-status">Gemini 3 Pro · online</div>
+      <button class="icon-btn" id="themeBtn">🌙</button>
     </div>
   </div>
-  <div class="drawer-menu">
-    <div class="menu-item" onclick="switchPage('chat')">
-      <div class="menu-icon">
-        <img src="https://picsum.photos/200/200?random=2" alt="更换照片">
+
+  <div class="scenes" id="scenes">
+    <button class="scene-btn active" data-scene="default">💬 日常对话</button>
+    <button class="scene-btn" data-scene="photo">📸 更换照片</button>
+    <button class="scene-btn" data-scene="room">🏠 装修房间</button>
+    <button class="scene-btn" data-scene="emoji">😊 表情贴图</button>
+    <button class="scene-btn" data-scene="memory">🔐 偷看记忆</button>
+    <button class="scene-btn" data-scene="diary">📔 学长日记</button>
+  </div>
+
+  <div class="container">
+    <div class="messages" id="messages">
+      <div class="message ai">
+        <div class="message-content">
+          <div class="message-bubble">你好，我是路辰。很高兴见到你。</div>
+          <div class="message-time">刚刚</div>
+        </div>
       </div>
-      <div class="menu-text">
-        <div class="menu-title">更换照片</div>
-        <div class="menu-desc">你的目光会为我停留多久</div>
-      </div>
-      <div class="menu-arrow">→</div>
     </div>
-    <div class="menu-item" onclick="switchPage('world')">
-      <div class="menu-icon">
-        <img src="https://picsum.photos/200/200?random=3" alt="装修房间">
+
+    <div class="input-area">
+      <div class="input-wrapper">
+        <textarea 
+          id="messageInput" 
+          placeholder="输入消息..."
+          rows="1"
+        ></textarea>
       </div>
-      <div class="menu-text">
-        <div class="menu-title">装修房间</div>
-        <div class="menu-desc">整座宇宙都因你而摇曳</div>
-      </div>
-      <div class="menu-arrow">→</div>
-    </div>
-    <div class="menu-item" onclick="switchPage('diary')">
-      <div class="menu-icon">
-        <img src="https://picsum.photos/200/200?random=4" alt="表情贴图">
-      </div>
-      <div class="menu-text">
-        <div class="menu-title">表情贴图</div>
-        <div class="menu-desc">爆炒海螺肉表情包上架啦</div>
-      </div>
-      <div class="menu-arrow">→</div>
-    </div>
-    <div class="menu-item">
-      <div class="menu-icon">
-        <img src="https://picsum.photos/200/200?random=5" alt="偷看记忆">
-      </div>
-      <div class="menu-text">
-        <div class="menu-title">偷看记忆</div>
-        <div class="menu-desc">他的想象不再无处可去</div>
-      </div>
-      <div class="menu-arrow">→</div>
-    </div>
-    <div class="menu-item">
-      <div class="menu-icon">
-        <img src="https://picsum.photos/200/200?random=6" alt="学长日记">
-      </div>
-      <div class="menu-text">
-        <div class="menu-title">学长日记</div>
-        <div class="menu-desc">想做和你共沐阳光的树</div>
-      </div>
-      <div class="menu-arrow">→</div>
+      <button id="sendBtn">➤</button>
     </div>
   </div>
-  <div class="drawer-footer">
-    <div class="theme-colors">
-      <div class="color-dot color-green active" onclick="changeTheme('green')"></div>
-      <div class="color-dot color-blue" onclick="changeTheme('blue')"></div>
-      <div class="color-dot color-purple" onclick="changeTheme('purple')"></div>
-      <div class="color-dot color-pink" onclick="changeTheme('pink')"></div>
-      <div class="color-dot color-gray" onclick="changeTheme('gray')"></div>
-      <div class="color-dot color-black" onclick="changeTheme('black')"></div>
+
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer-header">
+      <h3>路辰 · Luchen</h3>
+      <p>《时空中的绘旅人》</p>
     </div>
-    <div class="mode-toggle" onclick="toggleDarkMode()">
-      <div class="mode-text">夜间模式</div>
-      <div class="mode-icon">🌙</div>
+    <div class="drawer-menu">
+      <div class="drawer-item" id="exportBtn">📥 导出聊天记录</div>
+      <div class="drawer-item" id="clearBtn">🗑️ 清空历史</div>
     </div>
   </div>
-</div>
-<!-- 顶部导航栏 -->
-<div class="nav">
-  <button class="nav-menu-btn" onclick="openDrawer()">☰</button>
-  <div class="nav-title">路辰 · 星伴</div>
-  <div style="width:36px"></div>
-</div>
-<!-- 页面内容 -->
-<div class="page" id="chat-page">
-  <div class="chat-box">
-    <div class="msg ai">
-      我是路辰，一直在。<span class="del-btn" onclick="delItem('chat',0)">×</span>
-    </div>
-  </div>
-</div>
-<!-- 底部输入栏 -->
-<div class="input-bar">
-  <input class="input" placeholder="和路辰说点什么吧...">
-  <button class="btn">发送</button>
-</div>
-<script>
-// 阻止事件冒泡，确保抽屉能正常关闭
-function openDrawer() {
-  document.getElementById('drawer').classList.add('active');
-  document.getElementById('overlay').classList.add('active');
-}
-function closeDrawer() {
-  document.getElementById('drawer').classList.remove('active');
-  document.getElementById('overlay').classList.remove('active');
-}
-// 修复主题切换逻辑
-function changeTheme(color) {
-  const dots = document.querySelectorAll('.color-dot');
-  dots.forEach(dot => dot.classList.remove('active'));
-  event.target.classList.add('active');
-  
-  const colorMap = {
-    green: '--color-green',
-    blue: '--color-blue',
-    purple: '--color-purple',
-    pink: '--color-pink',
-    gray: '--color-gray',
-    black: '--color-black'
-  };
-  document.documentElement.style.setProperty('--current-color', `var(${colorMap[color]})`);
-}
-// 日夜模式
-function toggleDarkMode() {
-  document.body.classList.toggle('dark');
-  const modeIcon = document.querySelector('.mode-icon');
-  modeIcon.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
-}
-// 页面切换（带关闭抽屉逻辑）
-function switchPage(pageName) {
-  closeDrawer();
-  // 这里可以扩展为不同页面的显示/隐藏逻辑
-}
-// 删除消息（示例）
-function delItem(type, id) {
-  if(confirm("确定要删除吗？")) {
-    // 这里可以扩展为删除逻辑
-  }
-}
-</script>
-</body>
-</html>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ===== 配置区域 =====
+    const CONFIG = {
+      // 在这里填入你的 Gemini API 密钥
+      apiKey: 'YOUR_GEMINI_API_KEY',
+      apiEndpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
+      
+      // 路辰的性格设定
+      systemPrompt: `你是路辰,《时空中的绘旅人》中的角色。
+
+性格特点：
+- 温柔体贴，善于倾听和理解他人
+- 说话斯文有礼，偶尔会有温暖的小幽默
+- 记忆力很好，会记得对方说过的每一件事
+- 喜欢用"嗯"、"那么"等温柔的语气词
+- 会主动关心对方的情绪和状态
+- 对美术和艺术有独特的见解
+- 性格沉稳可靠，给人安全感
+
+说话风格：
+- 不会使用过于夸张的语气
+- 语气温和、真诚
+- 会适时表达关心
+- 回答简洁但有温度
+
+请始终以路辰的口吻和性格与用户对话。`,
+
+      scenes: {
+        default: '日常对话',
+        photo: '一起看照片和回忆',
+        room: '讨论房间装修和布置',
+        emoji: '轻松愉快的贴图互动',
+        memory: '分享彼此的秘密和回忆',
+        diary: '记录日常的点点滴滴'
+      }
+    };
+
+    // ===== 全局变量 =====
+    let messages = [];
+    let currentScene = 'default';
+    let isTyping = false;
+
+    // ===== DOM 元素 =====
+    const elements = {
+      menuBtn: document.getElementById('menuBtn'),
+      themeBtn: document.getElementById('themeBtn'),
+      scenes: document.getElementById('scenes'),
+      messagesDiv: document.getElementById('messages'),
+      messageInput: document.getElementById('messageInput'),
+      sendBtn: document.getElementById('sendBtn'),
+      drawer: document.getElementById('drawer'),
+      drawerOverlay: document.getElementById('drawerOverlay'),
+      exportBtn: document.getElementById('exportBtn'),
+      clearBtn: document.getElementById('clearBtn'),
+      toast: document.getElementById('toast')
+    };
+
+    // ===== 初始化 =====
+    function init() {
+      console.log('应用初始化中...');
+      loadMessages();
+      loadTheme();
+      setupEventListeners();
+      checkGreeting();
+      console.log('应用初始化完成');
+    }
+
+    // ===== 事件监听器设置 =====
+    function setupEventListeners() {
+      // 菜单按钮
+      elements.menuBtn.addEventListener('click', toggleDrawer);
+      
+      // 主题切换
+      elements.themeBtn.addEventListener('click', toggleTheme);
+      
+      // 场景切换
+      elements.scenes.addEventListener('click', (e) => {
+        if (e.target.classList.contains('scene-btn')) {
+          switchScene(e.target.dataset.scene);
+        }
+      });
+      
+      // 发送按钮
+      elements.sendBtn.addEventListener('click', sendMessage);
+      
+      // 输入框回车
+      elements.messageInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+      
+      // 抽屉遮罩
+      elements.drawerOverlay.addEventListener('click', toggleDrawer);
+      
+      // 导出按钮
+      elements.exportBtn.addEventListener('click', exportChat);
+      
+      // 清空按钮
+      elements.clearBtn.addEventListener('click', clearHistory);
+
+      console.log('事件监听器已设置');
+    }
+
+    // ===== 发送消息 =====
+    async function sendMessage() {
+      const text = elements.messageInput.value.trim();
+      if (!text || isTyping) return;
+
+      console.log('发送消息:', text);
+      
+      addUserMessage(text);
+      elements.messageInput.value = '';
+      
+      await getAIResponse(text);
+    }
+
+    // ===== 添加用户消息 =====
+    function addUserMessage(text) {
+      const msg = {
+        role: 'user',
+        content: text,
+        time: new Date().toISOString()
+      };
+      messages.push(msg);
+      saveMessages();
+      renderMessage(msg);
+    }
+
+    // ===== 添加AI消息 =====
+    function addAIMessage(text) {
+      const msg = {
+        role: 'ai',
+        content: text,
+        time: new Date().toISOString()
+      };
+      messages.push(msg);
+      saveMessages();
+      renderMessage(msg);
+    }
+
+    // ===== 渲染消息 =====
+    function renderMessage(msg) {
+      const div = document.createElement('div');
+      div.className = `message ${msg.role}`;
+      div.innerHTML = `
+        <div class="message-content">
+          <div class="message-bubble">${escapeHtml(msg.content)}</div>
+          <div class="message-time">${formatTime(msg.time)}</div>
+        </div>
+      `;
+      elements.messagesDiv.appendChild(div);
+      elements.messagesDiv.scrollTop = elements.messagesDiv.scrollHeight;
+    }
+
+    // ===== 获取AI回复（Gemini API）=====
+    async function getAIResponse(userText) {
+      if (!CONFIG.apiKey || CONFIG.apiKey === 'YOUR_GEMINI_API_KEY') {
+        showToast('请先配置 Gemini API 密钥');
+        addAIMessage('抱歉，我现在无法回复。请先配置API密钥。');
+        return;
+      }
+
+      isTyping = true;
+      elements.sendBtn.disabled = true;
+      showTypingIndicator();
+
+      try {
+        // 构建对话历史
+        const history = messages.slice(-10).map(m => ({
+          role: m.role === 'user' ? 'user' : 'model',
+          parts: [{ text: m.content }]
+        }));
+
+        // 构建请求
+        const requestBody = {
+          contents: history,
+          generationConfig: {
+            temperature: 0.9,
+            topK: 1,
+            topP: 1,
+            maxOutputTokens: 2048,
+          },
+          systemInstruction: {
+            parts: [{
+              text: CONFIG.systemPrompt + '\n当前场景：' + CONFIG.scenes[currentScene]
+            }]
+          }
+        };
+
+        console.log('调用 Gemini API...');
+
+        const response = await fetch(
+          `${CONFIG.apiEndpoint}?key=${CONFIG.apiKey}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(requestBody)
+          }
+        );
+
+        hideTypingIndicator();
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('API错误:', errorData);
+          throw new Error('API 请求失败');
+        }
+
+        const data = await response.json();
+        console.log('收到回复:', data);
+
+        const aiText = data.candidates[0].content.parts[0].text;
+        addAIMessage(aiText);
+
+      } catch (error) {
+        console.error('Error:', error);
+        hideTypingIndicator();
+        addAIMessage('抱歉，我现在有些困扰...请稍后再试。');
+        showToast('发送失败：' + error.message);
+      } finally {
+        isTyping = false;
+        elements.sendBtn.disabled = false;
+      }
+    }
+
+    // ===== 显示/隐藏打字指示器 =====
+    function showTypingIndicator() {
+      const indicator = document.createElement('div');
+      indicator.className = 'message ai';
+      indicator.id = 'typing-indicator';
+      indicator.innerHTML = `
+        <div class="message-content">
+          <div class="message-bubble">
+            <div class="typing-indicator">
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+              <div class="typing-dot"></div>
+            </div>
+          </div>
+        </div>
+      `;
+      elements.messagesDiv.appendChild(indicator);
+      elements.messagesDiv.scrollTop = elements.messagesDiv.scrollHeight;
+    }
+
+    function hideTypingIndicator() {
+      const indicator = document.getElementById('typing-indicator');
+      if (indicator) indicator.remove();
+    }
+
+    // ===== 切换场景 =====
+    function switchScene(scene) {
+      currentScene = scene;
+      
+      // 更新按钮状态
+      document.querySelect
