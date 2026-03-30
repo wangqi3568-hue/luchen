@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>路辰抽屉菜单 demo</title>
+<style>
+  /* 整体页面背景 */
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: url("https://picsum.photos/id/1018/2000/1200") no-repeat center center;
+    background-size: cover;
+    background-attachment: fixed;
+  }
+
+  /* 遮罩层 */
+  .overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.3);
+  }
+
+  /* 抽屉菜单容器 */
+  .luchen-drawer {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%); /* 居中 */
+    width: 220px;
+
+    background: rgba(255, 255, 255, 0.88); /* 淡化背景 */
+    backdrop-filter: blur(12px); /* iOS 毛玻璃效果 */
+    -webkit-backdrop-filter: blur(12px);
+
+    border-radius: 14px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    padding: 16px;
+  }
+
+  /* 标题 */
+  .drawer-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #1d1d1f;
+  }
+
+  /* 菜单项 */
+  .menu-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 14px;
+    color: #3a3a3c;
+  }
+
+  .menu-item:hover {
+    background-color: rgba(0,0,0,0.06); /* iOS 交互 hover */
+  }
+
+  /* 6 色圆点 */
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 10px;
+  }
+
+  .dot-red    { background: #ff9500; }
+  .dot-orange { background: #ff9500; }
+  .dot-yellow { background: #ffcc00; }
+  .dot-green  { background: #34c759; }
+  .dot-blue   { background: #007aff; }
+  .dot-purple { background: #af52de; }
+</style>
+</head>
+
+<body>
+<div class="overlay"></div>
+
+<!-- 路辰抽屉菜单 -->
+<div class="luchen-drawer">
+  <div class="drawer-title">菜单预览</div>
+
+  <div class="menu-item">
+    <span class="dot dot-red"></span>
+    <span>选项 A</span>
+  </div>
+
+  <div class="menu-item">
+    <span class="dot dot-blue"></span>
+    <span>选项 B</span>
+  </div>
+
+  <div class="menu-item">
+    <span class="dot dot-green"></span>
+    <span>选项 C</span>
+  </div>
+
+  <div class="menu-item">
+    <span class="dot dot-purple"></span>
+    <span>选项 D</span>
+  </div>
+</div>
+
+</body>
+</html>
