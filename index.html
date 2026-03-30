@@ -5,29 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>路辰 · Luchen</title>
   <style>
-    /* ===== 核心布局：确保输入框永远在底部 ===== */
+    /* 基础复位 */
     * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
+    
     :root {
-      --primary: #2d5a3d; /* 路辰森林绿 */
-      --bg: #f5f5f5;
-      --card-bg: #ffffff;
-      --text: #1a1a1a;
-      --text-sub: #666;
-      --border: #e0e0e0;
+      --primary: #2d5a3d;
+      --bg: #f2f2f2;
+      --text: #333;
+      --ai-bubble: #ffffff;
       --user-bubble: #2d5a3d;
-      --ai-bubble: #e8f5e9;
-    }
-
-    body.dark {
-      --primary: #4a9d6f;
-      --bg: #1a1a1a;
-      --card-bg: #2a2a2a;
-      --text: #e0e0e0;
-      --text-sub: #999;
-      --border: #333;
-      --user-bubble: #3d7a5d;
-      --ai-bubble: #243a2d;
     }
 
     body {
@@ -36,331 +22,160 @@
       color: var(--text);
       height: 100vh;
       display: flex;
-      flex-direction: column; /* 纵向排列 */
+      flex-direction: column;
       overflow: hidden;
-      transition: 0.3s;
     }
 
     /* 顶部栏 */
-    .header {
-      background: var(--card-bg);
-      padding: 12px 16px;
+    .nav {
+      background: #fff;
+      padding: 15px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid #ddd;
       flex-shrink: 0;
     }
-
-    .header-info { display: flex; align-items: center; gap: 10px; }
-    .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-
-    /* 场景切换 */
-    .scenes {
-      background: var(--card-bg);
-      padding: 10px;
-      overflow-x: auto;
-      white-space: nowrap;
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-    .scenes::-webkit-scrollbar { display: none; }
-    .scene-btn {
-      padding: 6px 15px;
-      margin-right: 8px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .scene-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .avatar { width: 35px; height: 35px; border-radius: 50%; background: var(--primary); color: #fff; display: flex; align-items: center; justify-content: center; margin-right: 10px; font-weight: bold; }
 
     /* 聊天区 */
-    .chat-container {
+    #chat-box {
       flex: 1;
       overflow-y: auto;
       padding: 15px;
       display: flex;
       flex-direction: column;
-      gap: 15px;
     }
 
-    .msg { display: flex; max-width: 85%; animation: fadeIn 0.3s; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-    
-    .msg.user { align-self: flex-end; }
-    .bubble { padding: 10px 14px; border-radius: 15px; line-height: 1.5; font-size: 15px; word-break: break-all; }
-    .msg.user .bubble { background: var(--user-bubble); color: white; border-bottom-right-radius: 4px; }
-    .msg.ai .bubble { background: var(--ai-bubble); color: var(--text); border-bottom-left-radius: 4px; }
+    .msg { margin-bottom: 15px; max-width: 80%; padding: 10px 15px; border-radius: 15px; line-height: 1.5; font-size: 15px; word-wrap: break-word; }
+    .msg.ai { background: var(--ai-bubble); align-self: flex-start; border-bottom-left-radius: 2px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+    .msg.user { background: var(--user-bubble); color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
 
     /* 输入区 */
-    .input-area {
-      background: var(--card-bg);
-      padding: 10px 15px;
+    .input-wrapper {
+      background: #fff;
+      padding: 10px;
       display: flex;
       gap: 10px;
-      align-items: flex-end;
-      border-top: 1px solid var(--border);
-      padding-bottom: calc(10px + env(safe-area-inset-bottom)); /* 适配全面屏 */
+      border-top: 1px solid #ddd;
+      flex-shrink: 0;
     }
-
-    .input-box {
+    #user-input {
       flex: 1;
-      background: var(--bg);
+      padding: 10px;
+      border: 1px solid #ddd;
       border-radius: 20px;
-      padding: 8px 15px;
-      border: 1px solid var(--border);
-    }
-
-    textarea {
-      width: 100%;
-      background: transparent;
-      border: none;
       outline: none;
-      resize: none;
-      color: var(--text);
       font-size: 16px;
       max-height: 100px;
+      overflow-y: auto;
     }
-
-    #sendBtn {
-      width: 40px; height: 40px; border-radius: 50%;
-      background: var(--primary); color: white; border: none;
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    #send-btn {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 0 15px;
+      border-radius: 20px;
+      cursor: pointer;
     }
-
-    /* 抽屉 */
-    .drawer { position: fixed; left: -280px; top: 0; width: 280px; height: 100%; background: var(--card-bg); transition: 0.3s; z-index: 100; padding: 20px; }
-    .drawer.open { left: 0; box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
-    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; z-index: 99; }
-    .overlay.show { display: block; }
-
-    /* 吐司提示 */
-    .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 8px 16px; border-radius: 20px; font-size: 12px; opacity: 0; transition: 0.3s; pointer-events: none; }
-    .toast.show { opacity: 1; }
   </style>
 </head>
 <body>
 
-  <div class="header">
-    <div class="header-info">
-      <div id="menuBtn">☰</div>
-      <div class="avatar">路</div>
-      <div>
-        <div style="font-weight: bold;">路辰</div>
-        <div style="font-size: 11px; color: #4caf50;">● 在线</div>
-      </div>
+  <div class="nav">
+    <div class="avatar">路</div>
+    <div>
+      <div style="font-weight: bold;">路辰</div>
+      <div style="font-size: 12px; color: #4caf50;">在线</div>
     </div>
-    <div id="themeBtn" style="cursor: pointer; font-size: 20px;">🌙</div>
   </div>
 
-  <div class="scenes" id="scenesList">
-    <button class="scene-btn active" data-scene="default">日常对话</button>
-    <button class="scene-btn" data-scene="photo">更换照片</button>
-    <button class="scene-btn" data-scene="room">装修房间</button>
-    <button class="scene-btn" data-scene="memory">他的记忆</button>
+  <div id="chat-box"></div>
+
+  <div class="input-wrapper">
+    <input type="text" id="user-input" placeholder="输入消息...">
+    <button id="send-btn">发送</button>
   </div>
-
-  <div class="chat-container" id="chatBox"></div>
-
-  <div class="input-area">
-    <div class="input-box">
-      <textarea id="userInput" placeholder="和路辰说话..." rows="1"></textarea>
-    </div>
-    <button id="sendBtn">➤</button>
-  </div>
-
-  <div class="overlay" id="overlay"></div>
-  <div class="drawer" id="drawer">
-    <h3 style="margin-bottom: 20px;">路辰 · 设置</h3>
-    <div style="padding: 15px 0; border-bottom: 1px solid var(--border); cursor: pointer;" onclick="clearHistory()">🗑️ 清空历史</div>
-    <div style="padding: 15px 0; border-bottom: 1px solid var(--border); cursor: pointer;" onclick="exportChat()">📥 导出记录</div>
-  </div>
-
-  <div class="toast" id="toast"></div>
 
   <script>
-    // ===== 配置中心 =====
-    const CONFIG = {
-      // 【这里填入你的 API KEY，记得带引号】
-      apiKey: 'AIzaSyCtbmDdadb1B0ReWK-17IEtAk3HVIe9GHY', 
-      
-      // 使用目前最稳妥的路径
-      endpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent',
-      
-      systemPrompt: "你是路辰,《时空中的绘旅人》中的角色。性格温柔体贴、斯文有礼。说话温和且充满温度，常使用'嗯'、'那么'。你非常在乎对方的情绪。",
-      
-      scenes: {
-        default: "日常对话",
-        photo: "查看彼此的照片",
-        room: "整理和布置房间",
-        memory: "分享深处的记忆"
-      }
-    };
+    // --- 只需要改这里 ---
+    const API_KEY = 'AIzaSyCtbmDdadb1B0ReWK-17IEtAk3HVIe9GHY'; 
+    const API_URL = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+    
+    // 路辰的人设指令
+    const SYSTEM_PROMPT = "你现在扮演《时空中的绘旅人》中的路辰。性格温柔、斯文、有礼。说话总是带着关怀，语气平和。你的回复要简短、温暖。";
 
-    let chatHistory = [];
-    let currentScene = 'default';
+    // 聊天历史
+    let history = [];
 
-    // DOM 元素
-    const chatBox = document.getElementById('chatBox');
-    const userInput = document.getElementById('userInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const toast = document.getElementById('toast');
+    const chatBox = document.getElementById('chat-box');
+    const userInput = document.getElementById('user-input');
+    const sendBtn = document.getElementById('send-btn');
 
-    // 初始化
-    function init() {
-      // 加载主题
-      if(localStorage.getItem('theme') === 'dark') document.body.classList.add('dark');
-      
-      // 加载历史记录
-      const saved = localStorage.getItem('luchen_history');
-      if(saved) {
-        chatHistory = JSON.parse(saved);
-        chatHistory.forEach(renderMsg);
-      } else {
-        addMsg('ai', '你好，我是路辰。很高兴能再次见到你。');
-      }
-      
-      setupEvents();
-    }
-
-    function setupEvents() {
-      // 发送点击
-      sendBtn.onclick = handleSend;
-      
-      // 回车发送
-      userInput.onkeydown = (e) => { if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); } };
-      
-      // 输入框高度自适应
-      userInput.oninput = function() {
-        this.style.height = 'auto';
-        this.style.height = this.scrollHeight + 'px';
-      };
-
-      // 菜单切换
-      document.getElementById('menuBtn').onclick = () => {
-        document.getElementById('drawer').classList.add('open');
-        document.getElementById('overlay').classList.add('show');
-      };
-      document.getElementById('overlay').onclick = () => {
-        document.getElementById('drawer').classList.remove('open');
-        document.getElementById('overlay').classList.remove('show');
-      };
-
-      // 主题切换
-      document.getElementById('themeBtn').onclick = () => {
-        document.body.classList.toggle('dark');
-        const isDark = document.body.classList.contains('dark');
-        document.getElementById('themeBtn').innerText = isDark ? '☀️' : '🌙';
-        localStorage.setItem('theme', isDark ? 'dark' : 'light');
-      };
-
-      // 场景切换
-      document.getElementById('scenesList').onclick = (e) => {
-        if(e.target.classList.contains('scene-btn')) {
-          document.querySelectorAll('.scene-btn').forEach(b => b.classList.remove('active'));
-          e.target.classList.add('active');
-          currentScene = e.target.dataset.scene;
-          showToast('切换至场景：' + CONFIG.scenes[currentScene]);
-        }
-      };
-    }
-
-    async function handleSend() {
-      const text = userInput.value.trim();
-      if(!text) return;
-
-      userInput.value = '';
-      userInput.style.height = 'auto';
-      
-      addMsg('user', text);
-      await getAIResponse();
-    }
-
-    function addMsg(role, content) {
-      const msg = { role, content, time: Date.now() };
-      chatHistory.push(msg);
-      renderMsg(msg);
-      localStorage.setItem('luchen_history', JSON.stringify(chatHistory));
-    }
-
-    function renderMsg(msg) {
+    // 渲染消息
+    function showMessage(role, text) {
       const div = document.createElement('div');
-      div.className = `msg ${msg.role}`;
-      div.innerHTML = `<div class="bubble">${msg.content}</div>`;
+      div.className = `msg ${role}`;
+      div.innerText = text;
       chatBox.appendChild(div);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    async function getAIResponse() {
-      if(!CONFIG.apiKey || CONFIG.apiKey.includes('你的')) {
-        showToast('请先在代码中填入 API KEY');
-        return;
+    // 初始化欢迎语
+    window.onload = () => {
+      showMessage('ai', '你好，我是路辰。很高兴能再次见到你。');
+    };
+
+    // 发送逻辑
+    async function handleSend() {
+      const text = userInput.value.trim();
+      if (!text || !API_KEY) return;
+
+      // 1. 显示用户消息
+      showMessage('user', text);
+      userInput.value = '';
+
+      // 2. 准备发送给 API 的数据
+      // 将人设塞进第一条消息里（最稳妥的做法）
+      let contents = [];
+      if (history.length === 0) {
+        contents.push({ role: 'user', parts: [{ text: SYSTEM_PROMPT + "\n\n用户说：" + text }] });
+      } else {
+        contents = [...history, { role: 'user', parts: [{ text: text }] }];
       }
 
-      // 显示打字中状态
-      const typing = document.createElement('div');
-      typing.className = 'msg ai';
-      typing.innerHTML = `<div class="bubble" id="typing">...</div>`;
-      chatBox.appendChild(typing);
-      chatBox.scrollTop = chatBox.scrollHeight;
-
+      // 3. 调用 API
       try {
-        // 整理历史记录 (取最近10条)
-        const history = chatHistory.slice(-10).map(m => ({
-          role: m.role === 'user' ? 'user' : 'model',
-          parts: [{ text: m.content }]
-        }));
-
-        const response = await fetch(`${CONFIG.endpoint}?key=${CONFIG.apiKey}`, {
+        const response = await fetch(`${API_URL}?key=${API_KEY}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: history,
-            // 核心修复：带下划线的系统指令
-            system_instruction: {
-              parts: [{ text: CONFIG.systemPrompt + " 当前场景：" + CONFIG.scenes[currentScene] }]
-            },
-            generationConfig: { temperature: 0.8, maxOutputTokens: 800 }
-          })
+          body: JSON.stringify({ contents: contents.slice(-10) }) // 只取最近10条，防止太长
         });
 
         const data = await response.json();
-        document.getElementById('typing').parentElement.remove(); // 移除打字动画
-
-        if(data.candidates && data.candidates[0].content) {
-          addMsg('ai', data.candidates[0].content.parts[0].text);
+        
+        if (data.candidates && data.candidates[0].content) {
+          const aiText = data.candidates[0].content.parts[0].text;
+          showMessage('ai', aiText);
+          
+          // 更新历史记录
+          history.push({ role: 'user', parts: [{ text: text }] });
+          history.push({ role: 'model', parts: [{ text: aiText }] });
         } else {
-          const err = data.error ? data.error.message : '通讯解析失败';
-          addMsg('ai', `(路辰微微皱眉) 似乎信号不太好，错误：${err}`);
+          const errMsg = data.error ? data.error.message : '解析失败';
+          showMessage('ai', `(路辰微微皱眉) 抱歉，通讯好像出错了：${errMsg}`);
         }
       } catch (e) {
-        document.getElementById('typing')?.parentElement.remove();
-        showToast('网络请求失败');
-        addMsg('ai', '(路辰没能收到你的消息) 请检查网络。');
+        showMessage('ai', '(信号中断) 无法连接到路辰，请检查网络。');
       }
     }
 
-    function showToast(msg) {
-      toast.innerText = msg;
-      toast.classList.add('show');
-      setTimeout(() => toast.classList.remove('show'), 2000);
-    }
+    // 绑定点击事件
+    sendBtn.onclick = handleSend;
 
-    function clearHistory() { if(confirm('要清空和路辰的历史记录吗？')) { localStorage.removeItem('luchen_history'); location.reload(); } }
-    
-    function exportChat() {
-      const text = chatHistory.map(m => `[${m.role === 'user' ? '我' : '路辰'}] ${m.content}`).join('\n');
-      const blob = new Blob([text], {type: 'text/plain'});
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = '与路辰的对话.txt';
-      a.click();
-    }
-
-    init();
+    // 绑定回车事件
+    userInput.onkeypress = (e) => {
+      if (e.key === 'Enter') handleSend();
+    };
   </script>
 </body>
 </html>
