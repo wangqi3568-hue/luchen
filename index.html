@@ -346,12 +346,12 @@
   </div>
 
   <div class="scenes" id="scenes">
-    <button class="scene-btn active" data-scene="default">💬 日常对话</button>
-    <button class="scene-btn" data-scene="photo">📸 更换照片</button>
-    <button class="scene-btn" data-scene="room">🏠 装修房间</button>
-    <button class="scene-btn" data-scene="emoji">😊 表情贴图</button>
-    <button class="scene-btn" data-scene="memory">🔐 偷看记忆</button>
-    <button class="scene-btn" data-scene="diary">📔 学长日记</button>
+    <button class="scene-btn active" data-scene="default"> 日常对话</button>
+    <button class="scene-btn" data-scene="photo"> 更换照片</button>
+    <button class="scene-btn" data-scene="room"> 装修房间</button>
+    <button class="scene-btn" data-scene="emoji"> 表情贴图</button>
+    <button class="scene-btn" data-scene="memory"> 他的记忆</button>
+    <button class="scene-btn" data-scene="diary"> 他的日记</button>
   </div>
 
   <div class="container">
@@ -394,7 +394,7 @@
     // ===== 配置区域 =====
     const CONFIG = {
       // 在这里填入你的 Gemini API 密钥
-      apiKey: 'YOUR_GEMINI_API_KEY',
+      apiKey: AIzaSyCtbmDdadb1B0ReWK-17IEtAk3HVIe9GHY',
       apiEndpoint: 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent',
       
       // 路辰的性格设定
@@ -649,4 +649,150 @@
       currentScene = scene;
       
       // 更新按钮状态
-      document.querySelect
+      document.querySelectorAll('.scene-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.querySelector(`[data-scene="${scene}"]`).classList.add('active');
+      
+      // 场景欢迎语
+      const sceneMessages = {
+        photo: '要和我分享什么照片吗？',
+        room: '想聊聊房间的布置吗？我可以给你一些建议。',
+        emoji: '😊 今天心情怎么样？',
+        memory: '有什么想和我分享的秘密吗？我会好好保管的。',
+        diary: '今天有什么想记录的事情吗？'
+      };
+
+      if (scene !== 'default' && sceneMessages[scene]) {
+        setTimeout(() => addAIMessage(sceneMessages[scene]), 500);
+      }
+
+      console.log('切换到场景:', scene);
+    }
+
+    // ===== 切换抽屉 =====
+    function toggleDrawer() {
+      elements.drawer.classList.toggle('open');
+      elements.drawerOverlay.classList.toggle('show');
+    }
+
+    // ===== 切换主题 =====
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      const isDark = document.body.classList.contains('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      elements.themeBtn.textContent = isDark ? '☀️' : '🌙';
+    }
+
+    // ===== 加载主题 =====
+    function loadTheme() {
+      const theme = localStorage.getItem('theme');
+      if (theme === 'dark') {
+        document.body.classList.add('dark');
+        elements.themeBtn.textContent = '☀️';
+      }
+    }
+
+    // ===== 导出聊天记录 =====
+    function exportChat() {
+      const text = messages.map(m => {
+        const time = new Date(m.time).toLocaleString('zh-CN');
+        const sender = m.role === 'user' ? '我' : '路辰';
+        return `[${time}] ${sender}：${m.content}`;
+      }).join('\n\n');
+
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `与路辰的对话_${new Date().toLocaleDateString()}.txt`;
+      a.click();
+      
+      showToast('聊天记录已导出');
+      toggleDrawer();
+    }
+
+    // ===== 清空历史 =====
+    function clearHistory() {
+      if (confirm('确定要清空所有聊天记录吗？')) {
+        messages = [];
+        saveMessages();
+        elements.messagesDiv.innerHTML = '';
+        addAIMessage('你好，我是路辰。很高兴见到你。');
+        showToast('历史记录已清空');
+        toggleDrawer();
+      }
+    }
+
+    // ===== 检查问候 =====
+    function checkGreeting() {
+      const lastVisit = localStorage.getItem('lastVisit');
+      const now = new Date();
+      
+      if (!lastVisit || isNewDay(new Date(lastVisit), now)) {
+        setTimeout(() => {
+          const greeting = getGreeting();
+          addAIMessage(greeting);
+        }, 1000);
+      }
+      
+      localStorage.setItem('lastVisit', now.toISOString());
+    }
+
+    function getGreeting() {
+      const hour = new Date().getHours();
+      if (hour < 12) return '早上好，今天也要元气满满哦。';
+      if (hour < 18) return '下午好，要不要休息一下？';
+      return '晚上好，今天过得怎么样？';
+    }
+
+    function isNewDay(date1, date2) {
+      return date1.toDateString() !== date2.toDateString();
+    }
+
+    // ===== 显示Toast =====
+    function showToast(message) {
+      elements.toast.textContent = message;
+      elements.toast.classList.add('show');
+      setTimeout(() => {
+        elements.toast.classList.remove('show');
+      }, 2000);
+    }
+
+    // ===== 工具函数 =====
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function formatTime(isoString) {
+      const date = new Date(isoString);
+      const now = new Date();
+      const diffMins = Math.floor((now - date) / 60000);
+      
+      if (diffMins < 1) return '刚刚';
+      if (diffMins < 60) return `${diffMins}分钟前`;
+      if (date.toDateString() === now.toDateString()) {
+        return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+      }
+      return date.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+    }
+
+    function saveMessages() {
+      localStorage.setItem('luchen_messages', JSON.stringify(messages));
+    }
+
+    function loadMessages() {
+      const saved = localStorage.getItem('luchen_messages');
+      if (saved) {
+        messages = JSON.parse(saved);
+        messages.forEach(msg => renderMessage(msg));
+      }
+    }
+
+    // ===== 启动应用 =====
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
