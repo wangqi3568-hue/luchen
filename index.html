@@ -465,7 +465,7 @@
       elements.messagesDiv.scrollTop = elements.messagesDiv.scrollHeight;
     }
 
-    async function getAIResponse(userText) {
+   async function getAIResponse(userText) {
   if (!CONFIG.apiKey) {
     showToast("请先配置 API Key");
     return;
@@ -473,35 +473,52 @@
 
   showTyping();
   try {
-    const history = messages.slice(-6).map(m => ({
+    // 获取最近的几条历史记录
+    const recentMessages = messages.slice(-6).map(m => ({
         role: m.role === 'user' ? 'user' : 'model',
         parts: [{ text: m.content }]
     }));
+
+    // 组合人设和当前场景
+    const fullSystemPrompt = `${CONFIG.systemPrompt}\n当前场景：${CONFIG.scenes[currentScene]}`;
+
+    // 使用最兼容的请求格式
+    const requestBody = {
+      contents: recentMessages,
+      // 修复点：改用 system_instruction (带下划线)
+      system_instruction: {
+        parts: [{ text: fullSystemPrompt }]
+      },
+      generationConfig: {
+        temperature: 0.8,
+        topP: 0.8,
+        topK: 40,
+        maxOutputTokens: 1024,
+      }
+    };
 
     const apiUrl = `${CONFIG.apiEndpoint}?key=${CONFIG.apiKey}`;
     
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: history,
-        // 加上系统指令，确保路辰的人设
-        systemInstruction: { parts: [{ text: CONFIG.systemPrompt + " 当前场景：" + CONFIG.scenes[currentScene] }] }
-      })
+      body: JSON.stringify(requestBody)
     });
 
-    // --- 新增：详细报错检查 ---
     if (!response.ok) {
         const errorDetail = await response.json();
         console.error("API 报错详情:", errorDetail);
         removeTyping();
         
-        // 这里的提示会告诉你具体是 Key 错了还是网络断了
+        // 如果系统还是报错说不支持 system_instruction，我们就用 Plan B (直接塞进历史)
+        if (errorDetail.error && errorDetail.error.message.includes("system_instruction")) {
+            return getAIResponsePlanB(userText); 
+        }
+
         const errorMsg = errorDetail.error ? errorDetail.error.message : "未知错误";
-        addAIMessage(`(路辰微微皱眉) 抱歉，通讯似乎被干扰了。错误信息：${errorMsg}`);
+        addAIMessage(`(路辰有些困扰) 通讯似乎还是不太稳定... 错误：${errorMsg}`);
         return;
     }
-    // -----------------------
 
     const data = await response.json();
     removeTyping();
@@ -510,15 +527,39 @@
         const aiText = data.candidates[0].content.parts[0].text;
         addAIMessage(aiText);
     } else {
-        addAIMessage("(路辰沉默了，似乎在思考别的事情...)");
+        addAIMessage("(路辰安静地看着你，似乎在等你继续说...)");
     }
 
   } catch (e) {
     removeTyping();
-    console.error("网络请求发生异常:", e);
-    addAIMessage(`(路辰没能收到你的消息) 网络请求失败，请检查你的网络环境。详细信息：${e.message}`);
-    showToast("网络连接异常");
+    console.error("发生异常:", e);
+    addAIMessage(`(通讯中断了) 请检查网络连接。`);
   }
+}
+
+// --- Plan B: 最原始但也最有效的“人设注入”法 ---
+async function getAIResponsePlanB(userText) {
+    const fullSystemPrompt = `[系统设定：${CONFIG.systemPrompt} 当前场景：${CONFIG.scenes[currentScene]}]`;
+    const history = messages.slice(-6).map(m => ({
+        role: m.role === 'user' ? 'user' : 'model',
+        parts: [{ text: m.content }]
+    }));
+    
+    // 把人设强行塞进第一条消息里
+    if(history.length > 0) {
+        history[0].parts[0].text = fullSystemPrompt + "\n\n" + history[0].parts[0].text;
+    }
+
+    const response = await fetch(`${CONFIG.apiEndpoint}?key=${CONFIG.apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: history })
+    });
+    
+    const data = await response.json();
+    removeTyping();
+    const aiText = data.candidates[0].content.parts[0].text;
+    addAIMessage(aiText);
 }
 
     // UI 辅助函数
